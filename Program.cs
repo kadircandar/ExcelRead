@@ -2,7 +2,9 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExcelRead.Models;
 
-class Program
+namespace ExcelRead;
+
+static class Program
 {
     static void Main(string[] args)
     {
@@ -11,6 +13,8 @@ class Program
         string path = "";
 
         var excelData = ReadExcelFile(path);
+
+        var result = GetExcelDataList(excelData);
 
         Console.WriteLine("Excel Read Completed.");
     }
@@ -23,20 +27,20 @@ class Program
         using (var document = SpreadsheetDocument.Open(filePath, false))
         {
             var workbookPart = document.WorkbookPart;
-            var sheet = workbookPart.Workbook.Sheets.Elements<Sheet>().FirstOrDefault();
-            var worksheetPart = (WorksheetPart)workbookPart.GetPartById(sheet.Id);
+            var sheet = workbookPart?.Workbook.Sheets?.Elements<Sheet>().FirstOrDefault();
+            var worksheetPart = (WorksheetPart)workbookPart?.GetPartById(sheet?.Id);
 
-            var sheetData = worksheetPart.Worksheet.Elements<SheetData>().FirstOrDefault();
-            SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
+            var sheetData = worksheetPart?.Worksheet.Elements<SheetData>().FirstOrDefault();
+            SharedStringTablePart? sstpart = workbookPart?.GetPartsOfType<SharedStringTablePart>().First();
             SharedStringTable sst = sstpart.SharedStringTable;
 
-            Row headerRow = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex == headerRowIndex);
+            Row headerRow = sheetData?.Elements<Row>().FirstOrDefault(r => r.RowIndex == headerRowIndex);
 
             if (headerRow != null)
             {
                 foreach (Cell cell in headerRow.Elements<Cell>())
                 {
-                    string headerValue = GetCellValue(cell, sst);
+                    string? headerValue = GetCellValue(cell, sst);
                     string columnRef = GetColumnReference(cell.CellReference);
 
                     columnInfos.Add(new ColumnInfo
@@ -55,7 +59,7 @@ class Program
 
             foreach (Row row in dataRows)
             {
-                var rowData = new Dictionary<string, string>();
+                var rowData = new Dictionary<string, string?>();
 
                 // Önce tüm başlıklar için boş değer ata
                 foreach (var header in excelData.Headers)
@@ -71,7 +75,7 @@ class Program
 
                     if (columnInfo != null)
                     {
-                        string value = GetCellValue(cell, sst) ?? string.Empty;
+                        string? value = GetCellValue(cell, sst) ?? string.Empty;
                         rowData[columnInfo.Header] = value;
                     }
                 }
@@ -94,7 +98,7 @@ class Program
         if (cell.CellValue == null)
             return string.Empty;
 
-        string value = cell.CellValue.Text;
+        string? value = cell.CellValue.Text;
 
         if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
         {
@@ -104,4 +108,19 @@ class Program
         return value;
     }
 
+
+    private static List<DataModel> GetExcelDataList(ExcelData excelData)
+    {
+        var result = new List<DataModel>();
+        foreach (var row in excelData.Rows)
+            result.Add(new DataModel
+            {
+                Firstname = !string.IsNullOrEmpty(row["Firstname"]) ? row["Firstname"] : null,
+                Lastname = !string.IsNullOrEmpty(row["Lastname"]) ? row["Lastname"] : null,
+                Email = !string.IsNullOrEmpty(row["Email"]) ? row["Email"] : null
+            });
+
+        return result;
+    }
+    
 }
