@@ -108,7 +108,6 @@ static class Program
         return value;
     }
 
-
     private static List<DataModel> GetExcelDataList(ExcelData excelData)
     {
         var result = new List<DataModel>();
