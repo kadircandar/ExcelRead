@@ -135,13 +135,14 @@ static class Program
             {
                 Firstname = !string.IsNullOrEmpty(row["Firstname"]) ? row["Firstname"] : null,
                 Lastname = !string.IsNullOrEmpty(row["Lastname"]) ? row["Lastname"] : null,
-                Email = !string.IsNullOrEmpty(row["Email"]) ? row["Email"] : null
+                Email = !string.IsNullOrEmpty(row["Email"]) ? row["Email"] : null,
+                Birthdate = !string.IsNullOrEmpty(row["Birthdate"]) ? DateTimeParse(row["Birthdate"]) : null
             });
 
         return result;
     }
     
-    public static DateTime? DateTimeParse(string dateStr)
+    public static DateTime? DateTimeParse(string? dateStr)
     {
         if (string.IsNullOrEmpty(dateStr))
             return null;
